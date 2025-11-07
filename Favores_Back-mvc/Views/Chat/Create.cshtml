@@ -1,0 +1,45 @@
+@model Favores_Back_mvc.Models.Chat
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>Chat</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="FavorId" class="control-label"></label>
+                <select asp-for="FavorId" class ="form-control" asp-items="ViewBag.FavorId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="CreadorId" class="control-label"></label>
+                <select asp-for="CreadorId" class ="form-control" asp-items="ViewBag.CreadorId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="EjecutorId" class="control-label"></label>
+                <select asp-for="EjecutorId" class ="form-control" asp-items="ViewBag.EjecutorId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="FechaCreacion" class="control-label"></label>
+                <input asp-for="FechaCreacion" class="form-control" />
+                <span asp-validation-for="FechaCreacion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

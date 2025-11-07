@@ -10,8 +10,8 @@ namespace Favores_Back_mvc
             var builder = WebApplication.CreateBuilder(args);
 
 
-            builder.Services.AddDbContext<EscuelaDBContext>(options =>
-       options.UseSqlServer(builder.Configuration.GetConnectionString("EscuelaDBConnection")));
+            builder.Services.AddDbContext<FavoresDBContext>(options =>
+       options.UseSqlServer(builder.Configuration.GetConnectionString("FavoresDBConnection")));
 
 
             // Add services to the container.

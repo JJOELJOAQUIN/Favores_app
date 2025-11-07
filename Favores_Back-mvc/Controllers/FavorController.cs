@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,22 +10,23 @@ using Favores_Back_mvc.Models;
 
 namespace Favores_Back_mvc.Controllers
 {
-    public class EstudianteController : Controller
+    public class FavorController : Controller
     {
-        private readonly EscuelaDBContext _context;
+        private readonly FavoresDBContext _context;
 
-        public EstudianteController(EscuelaDBContext context)
+        public FavorController(FavoresDBContext context)
         {
             _context = context;
         }
 
-        // GET: Estudiante
+        // GET: Favor
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Estudiantes.ToListAsync());
+            var favoresDBContext = _context.Favores.Include(f => f.Creador);
+            return View(await favoresDBContext.ToListAsync());
         }
 
-        // GET: Estudiante/Details/5
+        // GET: Favor/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -33,39 +34,42 @@ namespace Favores_Back_mvc.Controllers
                 return NotFound();
             }
 
-            var estudiante = await _context.Estudiantes
+            var favor = await _context.Favores
+                .Include(f => f.Creador)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (estudiante == null)
+            if (favor == null)
             {
                 return NotFound();
             }
 
-            return View(estudiante);
+            return View(favor);
         }
 
-        // GET: Estudiante/Create
+        // GET: Favor/Create
         public IActionResult Create()
         {
+            ViewData["CreadorId"] = new SelectList(_context.Usuarios, "Id", "Email");
             return View();
         }
 
-        // POST: Estudiante/Create
+        // POST: Favor/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Nombre,Edad,FechaInscripto,DeporteFavorito")] Estudiante estudiante)
+        public async Task<IActionResult> Create([Bind("Id,Titulo,Descripcion,Ubicacion,Categoria,Recompensa,TipoRecompensa,Estado,CreadorId")] Favor favor)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(estudiante);
+                _context.Add(favor);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(estudiante);
+            ViewData["CreadorId"] = new SelectList(_context.Usuarios, "Id", "Email", favor.CreadorId);
+            return View(favor);
         }
 
-        // GET: Estudiante/Edit/5
+        // GET: Favor/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -73,22 +77,23 @@ namespace Favores_Back_mvc.Controllers
                 return NotFound();
             }
 
-            var estudiante = await _context.Estudiantes.FindAsync(id);
-            if (estudiante == null)
+            var favor = await _context.Favores.FindAsync(id);
+            if (favor == null)
             {
                 return NotFound();
             }
-            return View(estudiante);
+            ViewData["CreadorId"] = new SelectList(_context.Usuarios, "Id", "Email", favor.CreadorId);
+            return View(favor);
         }
 
-        // POST: Estudiante/Edit/5
+        // POST: Favor/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Edad,FechaInscripto,DeporteFavorito")] Estudiante estudiante)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Titulo,Descripcion,Ubicacion,Categoria,Recompensa,TipoRecompensa,Estado,CreadorId")] Favor favor)
         {
-            if (id != estudiante.Id)
+            if (id != favor.Id)
             {
                 return NotFound();
             }
@@ -97,12 +102,12 @@ namespace Favores_Back_mvc.Controllers
             {
                 try
                 {
-                    _context.Update(estudiante);
+                    _context.Update(favor);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!EstudianteExists(estudiante.Id))
+                    if (!FavorExists(favor.Id))
                     {
                         return NotFound();
                     }
@@ -113,10 +118,11 @@ namespace Favores_Back_mvc.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(estudiante);
+            ViewData["CreadorId"] = new SelectList(_context.Usuarios, "Id", "Email", favor.CreadorId);
+            return View(favor);
         }
 
-        // GET: Estudiante/Delete/5
+        // GET: Favor/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -124,34 +130,35 @@ namespace Favores_Back_mvc.Controllers
                 return NotFound();
             }
 
-            var estudiante = await _context.Estudiantes
+            var favor = await _context.Favores
+                .Include(f => f.Creador)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (estudiante == null)
+            if (favor == null)
             {
                 return NotFound();
             }
 
-            return View(estudiante);
+            return View(favor);
         }
 
-        // POST: Estudiante/Delete/5
+        // POST: Favor/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var estudiante = await _context.Estudiantes.FindAsync(id);
-            if (estudiante != null)
+            var favor = await _context.Favores.FindAsync(id);
+            if (favor != null)
             {
-                _context.Estudiantes.Remove(estudiante);
+                _context.Favores.Remove(favor);
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool EstudianteExists(int id)
+        private bool FavorExists(int id)
         {
-            return _context.Estudiantes.Any(e => e.Id == id);
+            return _context.Favores.Any(e => e.Id == id);
         }
     }
 }

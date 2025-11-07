@@ -1,4 +1,4 @@
-﻿@model Favores_Back_mvc.Models.Estudiante
+@model Favores_Back_mvc.Models.Chat
 
 @{
     ViewData["Title"] = "Details";
@@ -7,32 +7,32 @@
 <h1>Details</h1>
 
 <div>
-    <h4>Estudiante</h4>
+    <h4>Chat</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Nombre)
+            @Html.DisplayNameFor(model => model.Favor)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Nombre)
+            @Html.DisplayFor(model => model.Favor.Categoria)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Edad)
+            @Html.DisplayNameFor(model => model.Creador)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Edad)
+            @Html.DisplayFor(model => model.Creador.Email)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FechaInscripto)
+            @Html.DisplayNameFor(model => model.Ejecutor)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FechaInscripto)
+            @Html.DisplayFor(model => model.Ejecutor.Email)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DeporteFavorito)
+            @Html.DisplayNameFor(model => model.FechaCreacion)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DeporteFavorito)
+            @Html.DisplayFor(model => model.FechaCreacion)
         </dd>
     </dl>
 </div>

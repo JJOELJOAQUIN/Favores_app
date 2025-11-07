@@ -1,0 +1,49 @@
+@model Favores_Back_mvc.Models.Chat
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Chat</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="FavorId" class="control-label"></label>
+                <select asp-for="FavorId" class="form-control" asp-items="ViewBag.FavorId"></select>
+                <span asp-validation-for="FavorId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CreadorId" class="control-label"></label>
+                <select asp-for="CreadorId" class="form-control" asp-items="ViewBag.CreadorId"></select>
+                <span asp-validation-for="CreadorId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EjecutorId" class="control-label"></label>
+                <select asp-for="EjecutorId" class="form-control" asp-items="ViewBag.EjecutorId"></select>
+                <span asp-validation-for="EjecutorId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FechaCreacion" class="control-label"></label>
+                <input asp-for="FechaCreacion" class="form-control" />
+                <span asp-validation-for="FechaCreacion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

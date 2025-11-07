@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Favores_Back_mvc.Models.Estudiante>
+@model IEnumerable<Favores_Back_mvc.Models.Chat>
 
 @{
     ViewData["Title"] = "Index";
@@ -13,16 +13,16 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Nombre)
+                @Html.DisplayNameFor(model => model.Favor)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Edad)
+                @Html.DisplayNameFor(model => model.Creador)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.FechaInscripto)
+                @Html.DisplayNameFor(model => model.Ejecutor)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.DeporteFavorito)
+                @Html.DisplayNameFor(model => model.FechaCreacion)
             </th>
             <th></th>
         </tr>
@@ -31,16 +31,16 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Nombre)
+                @Html.DisplayFor(modelItem => item.Favor.Categoria)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Edad)
+                @Html.DisplayFor(modelItem => item.Creador.Email)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.FechaInscripto)
+                @Html.DisplayFor(modelItem => item.Ejecutor.Email)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.DeporteFavorito)
+                @Html.DisplayFor(modelItem => item.FechaCreacion)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
