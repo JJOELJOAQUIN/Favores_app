@@ -1,77 +1,67 @@
 @model IEnumerable<Favores_Back_mvc.Models.Favor>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Listado de Favores";
 }
 
-<h1>Index</h1>
+<h2 class="text-center mb-4">Listado de Favores</h2>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Titulo)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Descripcion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Ubicacion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Categoria)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Recompensa)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TipoRecompensa)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Estado)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Creador)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Titulo)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Descripcion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Ubicacion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Categoria)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Recompensa)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TipoRecompensa)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Estado)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Creador.Email)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+<div class="text-end mb-3">
+    <a asp-action="Create" class="btn btn-primary">+ Nuevo Favor</a>
+</div>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    @foreach (var favor in Model)
+    {
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">@favor.Titulo</h5>
+                    <p class="card-text text-muted">@favor.Categoria</p>
+                    <p class="card-text">
+                        <strong>Ubicación:</strong> @favor.Ubicacion <br />
+                        <strong>Recompensa:</strong> $@favor.Recompensa (@favor.TipoRecompensa)
+                    </p>
+                    <p class="card-text"><small class="text-secondary">Creador: @favor.Creador?.Email</small></p>
+                </div>
+                <div class="card-footer bg-white border-top-0 d-flex justify-content-between">
+                    <button class="btn btn-outline-primary btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#favorModal_@favor.Id">
+                        Ver detalle
+                    </button>
+                    <a asp-action="Edit" asp-route-id="@favor.Id" class="btn btn-outline-secondary btn-sm">Editar</a>
+                    <a asp-action="Delete" asp-route-id="@favor.Id" class="btn btn-outline-danger btn-sm">Eliminar</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Detalle -->
+        <div class="modal fade" id="favorModal_@favor.Id" tabindex="-1" aria-labelledby="favorModalLabel_@favor.Id" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="favorModalLabel_@favor.Id">@favor.Titulo</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Descripción:</strong> @favor.Descripcion</p>
+                        <p><strong>Ubicación:</strong> @favor.Ubicacion</p>
+                        <p><strong>Categoría:</strong> @favor.Categoria</p>
+                        <p><strong>Recompensa:</strong> $@favor.Recompensa (@favor.TipoRecompensa)</p>
+                        <p><strong>Estado:</strong> @favor.Estado</p>
+                        <p><strong>Creador:</strong> @favor.Creador?.Email</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Bootstrap JS -->
+@section Scripts {
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 }
-    </tbody>
-</table>

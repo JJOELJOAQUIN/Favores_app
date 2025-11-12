@@ -1,6 +1,6 @@
-
 using Microsoft.EntityFrameworkCore;
 using Favores_Back_mvc.Context;
+
 namespace Favores_Back_mvc
 {
     public class Program
@@ -9,10 +9,8 @@ namespace Favores_Back_mvc
         {
             var builder = WebApplication.CreateBuilder(args);
 
-
             builder.Services.AddDbContext<FavoresDBContext>(options =>
-       options.UseSqlServer(builder.Configuration.GetConnectionString("FavoresDBConnection")));
-
+                options.UseSqlServer(builder.Configuration.GetConnectionString("FavoresDBConnection")));
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
@@ -23,7 +21,6 @@ namespace Favores_Back_mvc
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
