@@ -44,10 +44,11 @@ namespace Favores_Back_mvc.Context
 
             // Relación: Favor (1) → (1) Chat
             modelBuilder.Entity<Chat>()
-                .HasOne(c => c.Favor)
-                .WithOne()
-                .HasForeignKey<Chat>(c => c.FavorId)
-                .OnDelete(DeleteBehavior.Restrict);
+          .HasOne(c => c.Favor)
+          .WithOne(f => f.Chat)
+          .HasForeignKey<Chat>(c => c.FavorId)
+          .OnDelete(DeleteBehavior.Restrict);
+
 
             // Relaciones del Chat con Usuarios (creador/ejecutor)
             modelBuilder.Entity<Chat>()

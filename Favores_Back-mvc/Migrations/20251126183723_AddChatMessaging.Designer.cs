@@ -4,6 +4,7 @@ using Favores_Back_mvc.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Favores_Back_mvc.Migrations
 {
     [DbContext(typeof(FavoresDBContext))]
-    partial class FavoresDBContextModelSnapshot : ModelSnapshot
+    [Migration("20251126183723_AddChatMessaging")]
+    partial class AddChatMessaging
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -179,10 +182,6 @@ namespace Favores_Back_mvc.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Estado")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("FavorId")
                         .HasColumnType("int");
 
@@ -317,7 +316,7 @@ namespace Favores_Back_mvc.Migrations
                         .IsRequired();
 
                     b.HasOne("Favores_Back_mvc.Models.Favor", "Favor")
-                        .WithOne("Chat")
+                        .WithOne()
                         .HasForeignKey("Favores_Back_mvc.Models.Chat", "FavorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -396,8 +395,6 @@ namespace Favores_Back_mvc.Migrations
 
             modelBuilder.Entity("Favores_Back_mvc.Models.Favor", b =>
                 {
-                    b.Navigation("Chat");
-
                     b.Navigation("Postulaciones");
                 });
 

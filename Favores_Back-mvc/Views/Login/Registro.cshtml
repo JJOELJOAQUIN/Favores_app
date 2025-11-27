@@ -1,0 +1,31 @@
+﻿@{
+    ViewData["Title"] = "Crear cuenta";
+}
+
+<h2 class="mb-3">Crear cuenta</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<form method="post">
+    <div class="mb-3">
+        <label>Nombre</label>
+        <input class="form-control" name="nombre" required />
+    </div>
+
+    <div class="mb-3">
+        <label>Email</label>
+        <input class="form-control" name="email" type="email" required />
+    </div>
+
+    <div class="mb-3">
+        <label>Contraseña</label>
+        <input class="form-control" name="password" type="password" required />
+    </div>
+
+    <button class="btn btn-success">Crear cuenta</button>
+
+    <a asp-action="Index" class="btn btn-link">Volver al login</a>
+</form>

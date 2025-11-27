@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Favores_Back_mvc.Context;
 using Favores_Back_mvc.Models;
@@ -19,158 +14,63 @@ namespace Favores_Back_mvc.Controllers
             _context = context;
         }
 
-        // GET: Chat
-        public async Task<IActionResult> Index()
-        {
-            var favoresDBContext = _context.Chats.Include(c => c.Creador).Include(c => c.Ejecutor).Include(c => c.Favor);
-            return View(await favoresDBContext.ToListAsync());
-        }
-
         // GET: Chat/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null)
-            {
+            var chat = await _context.Chats
+                .Include(c => c.Favor)
+                .Include(c => c.Creador)
+                .Include(c => c.Ejecutor)
+                .Include(c => c.Mensajes!)
+                    .ThenInclude(m => m.Remitente)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (chat == null)
                 return NotFound();
+
+            return View(chat);
+        }
+
+        // POST: Chat/EnviarMensaje
+        [HttpPost]
+        public async Task<IActionResult> EnviarMensaje(int chatId, string texto)
+        {
+            var usuarioId = HttpContext.Session.GetInt32("UsuarioId");
+
+            if (usuarioId == null)
+            {
+                TempData["Error"] = "Debes iniciar sesión para enviar mensajes.";
+                return RedirectToAction("Details", new { id = chatId });
             }
 
             var chat = await _context.Chats
-                .Include(c => c.Creador)
-                .Include(c => c.Ejecutor)
-                .Include(c => c.Favor)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .Include(c => c.Mensajes)
+                .FirstOrDefaultAsync(c => c.Id == chatId);
+
             if (chat == null)
             {
-                return NotFound();
+                TempData["Error"] = "El chat no existe.";
+                return RedirectToAction("Index", "Favor");
             }
 
-            return View(chat);
-        }
-
-        // GET: Chat/Create
-        public IActionResult Create()
-        {
-            ViewData["CreadorId"] = new SelectList(_context.Usuarios, "Id", "Email");
-            ViewData["EjecutorId"] = new SelectList(_context.Usuarios, "Id", "Email");
-            ViewData["FavorId"] = new SelectList(_context.Favores, "Id", "Categoria");
-            return View();
-        }
-
-        // POST: Chat/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FavorId,CreadorId,EjecutorId,FechaCreacion")] Chat chat)
-        {
-            if (ModelState.IsValid)
+            if (string.IsNullOrWhiteSpace(texto))
             {
-                _context.Add(chat);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                TempData["Error"] = "El mensaje no puede estar vacío.";
+                return RedirectToAction("Details", new { id = chatId });
             }
-            ViewData["CreadorId"] = new SelectList(_context.Usuarios, "Id", "Email", chat.CreadorId);
-            ViewData["EjecutorId"] = new SelectList(_context.Usuarios, "Id", "Email", chat.EjecutorId);
-            ViewData["FavorId"] = new SelectList(_context.Favores, "Id", "Categoria", chat.FavorId);
-            return View(chat);
-        }
 
-        // GET: Chat/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
+            var mensaje = new Mensaje
             {
-                return NotFound();
-            }
+                ChatId = chatId,
+                RemitenteId = usuarioId.Value,
+                Texto = texto,
+                FechaHora = DateTime.Now
+            };
 
-            var chat = await _context.Chats.FindAsync(id);
-            if (chat == null)
-            {
-                return NotFound();
-            }
-            ViewData["CreadorId"] = new SelectList(_context.Usuarios, "Id", "Email", chat.CreadorId);
-            ViewData["EjecutorId"] = new SelectList(_context.Usuarios, "Id", "Email", chat.EjecutorId);
-            ViewData["FavorId"] = new SelectList(_context.Favores, "Id", "Categoria", chat.FavorId);
-            return View(chat);
-        }
-
-        // POST: Chat/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FavorId,CreadorId,EjecutorId,FechaCreacion")] Chat chat)
-        {
-            if (id != chat.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(chat);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ChatExists(chat.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["CreadorId"] = new SelectList(_context.Usuarios, "Id", "Email", chat.CreadorId);
-            ViewData["EjecutorId"] = new SelectList(_context.Usuarios, "Id", "Email", chat.EjecutorId);
-            ViewData["FavorId"] = new SelectList(_context.Favores, "Id", "Categoria", chat.FavorId);
-            return View(chat);
-        }
-
-        // GET: Chat/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var chat = await _context.Chats
-                .Include(c => c.Creador)
-                .Include(c => c.Ejecutor)
-                .Include(c => c.Favor)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (chat == null)
-            {
-                return NotFound();
-            }
-
-            return View(chat);
-        }
-
-        // POST: Chat/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var chat = await _context.Chats.FindAsync(id);
-            if (chat != null)
-            {
-                _context.Chats.Remove(chat);
-            }
-
+            _context.Mensajes.Add(mensaje);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
 
-        private bool ChatExists(int id)
-        {
-            return _context.Chats.Any(e => e.Id == id);
+            return RedirectToAction("Details", new { id = chatId });
         }
     }
 }

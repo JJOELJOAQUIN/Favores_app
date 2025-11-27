@@ -19,6 +19,8 @@ namespace Favores_Back_mvc.Models
         public int UsuarioId { get; set; }
         public Usuario? Usuario { get; set; }
 
+        public string Estado { get; set; } = "Pendiente";
+
         public DateTime FechaPostulacion { get; set; } = DateTime.Now;
     }
 }

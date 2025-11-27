@@ -34,6 +34,10 @@ namespace Favores_Back_mvc.Models
         public int CreadorId { get; set; }
         public Usuario? Creador { get; set; }
 
-        public ICollection<Postulacion>? Postulaciones { get; set; }
+        public ICollection<Postulacion> Postulaciones { get; set; } = new List<Postulacion>();
+
+
+        public Chat? Chat { get; set; }
+
     }
 }

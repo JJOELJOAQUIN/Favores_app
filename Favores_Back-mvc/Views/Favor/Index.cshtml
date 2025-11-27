@@ -1,3 +1,5 @@
+
+
 @model IEnumerable<Favores_Back_mvc.Models.Favor>
 
 @{
@@ -25,11 +27,12 @@
                     <p class="card-text"><small class="text-secondary">Creador: @favor.Creador?.Email</small></p>
                 </div>
                 <div class="card-footer bg-white border-top-0 d-flex justify-content-between">
-                    <button class="btn btn-outline-primary btn-sm"
-                            data-bs-toggle="modal"
-                            data-bs-target="#favorModal_@favor.Id">
+                    <a asp-controller="Favor"
+                       asp-action="Details"
+                       asp-route-id="@favor.Id"
+                       class="btn btn-outline-primary btn-sm">
                         Ver detalle
-                    </button>
+                    </a>
                     <a asp-action="Edit" asp-route-id="@favor.Id" class="btn btn-outline-secondary btn-sm">Editar</a>
                     <a asp-action="Delete" asp-route-id="@favor.Id" class="btn btn-outline-danger btn-sm">Eliminar</a>
                 </div>

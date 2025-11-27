@@ -1,45 +1,93 @@
 @model Favores_Back_mvc.Models.Favor
+@using Favores_Back_mvc.Models
+@using System.Linq
 
-@{
-    ViewData["Title"] = "Detalles del Favor";
-    var creadorNombre = ViewData["CreadorNombre"] as string;
-    var creadorEmail = ViewData["CreadorEmail"] as string;
+<hr />
+
+<h3>DEBUG:</h3>
+
+<p>UsuarioId sesión: @Context.Session.GetInt32("UsuarioId")</p>
+<p>CreadorId del Favor: @Model.CreadorId</p>
+<p>Total Postulaciones: @Model.Postulaciones.Count</p>
+
+@if (TempData["Ok"] != null)
+{
+    <div class="alert alert-success">@TempData["Ok"]</div>
 }
 
-<div class="container mt-5">
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-primary text-white">
-            <h3 class="mb-0">@Model.Titulo</h3>
-        </div>
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
 
-        <div class="card-body">
-            <p class="card-text"><strong>Descripción:</strong> @Model.Descripcion</p>
-            <p class="card-text"><strong>Categoría:</strong> @Model.Categoria</p>
-            <p class="card-text"><strong>Ubicación:</strong> @Model.Ubicacion</p>
-            <p class="card-text"><strong>Recompensa:</strong> @Model.Recompensa (@Model.TipoRecompensa)</p>
-            <p class="card-text">
-                <strong>Estado:</strong>
-                <span class="badge bg-info text-dark">@Model.Estado</span>
-            </p>
-            <hr />
-            <div class="mt-3">
-                <h5 class="fw-bold">Publicado por:</h5>
-                <p class="mb-1"><i class="bi bi-person-circle"></i> @creadorNombre</p>
-                <p class="text-muted"><i class="bi bi-envelope"></i> @creadorEmail</p>
-            </div>
-        </div>
+@{
+    var usuarioId = Context.Session.GetInt32("UsuarioId");
+    bool esCreador = usuarioId.HasValue && usuarioId.Value == Model.CreadorId;
 
-        <div class="card-footer text-end bg-light">
-            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary me-2">
-                <i class="bi bi-pencil"></i> Editar
-            </a>
-            <a asp-action="Index" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Volver al listado
-            </a>
-        </div>
-    </div>
-</div>
+    var postulaciones = (Model.Postulaciones as IEnumerable<Postulacion>)
+                        ?? Enumerable.Empty<Postulacion>();
 
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.js"></script>
+    bool yaSePostulo = usuarioId.HasValue
+        && postulaciones.Any(p => p.UsuarioId == usuarioId.Value);
+}
+
+
+@if (usuarioId == null)
+{
+    <div class="alert alert-warning">Debes iniciar sesión para postularte.</div>
+}
+else if (esCreador)
+{
+    <div class="alert alert-info">Eres el creador del favor. No puedes postularte.</div>
+}
+else if (yaSePostulo)
+{
+    <div class="alert alert-success">Ya te postulaste a este favor.</div>
+}
+else
+{
+    <form asp-controller="Postulacion" asp-action="Postularse" method="post">
+        <input type="hidden" name="favorId" value="@Model.Id" />
+        <button type="submit" class="btn btn-primary mt-3">Postularse</button>
+    </form>
+}
+
+<hr />
+
+<h4 class="mt-4">Postulaciones</h4>
+
+@if (Model.Postulaciones == null || !Model.Postulaciones.Any())
+{
+    <p class="text-muted">No hay postulaciones aún.</p>
+}
+else
+{
+    <ul class="list-group">
+        @foreach (var p in Model.Postulaciones)
+        {
+            <li class="list-group-item d-flex justify-content-between">
+                <span>
+                    <strong>@(p.Usuario?.Email ?? "Usuario desconocido")</strong><br />
+                    @p.Mensaje
+                </span>
+
+                @if (usuarioId == Model.CreadorId && p.Estado == "Pendiente")
+                {
+                    <form asp-controller="Postulacion" asp-action="Aceptar" method="post">
+                        <input type="hidden" name="id" value="@p.Id" />
+                        <button type="submit" class="btn btn-success btn-sm">Aceptar</button>
+                    </form>
+                }
+            </li>
+        }
+    </ul>
+
+}
+
+<hr />
+
+@if (Model.Chat != null)
+{
+    <a asp-controller="Chat" asp-action="Details" asp-route-id="@Model.Chat.Id"
+       class="btn btn-primary mt-3">Ir al Chat</a>
 }

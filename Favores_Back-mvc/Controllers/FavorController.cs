@@ -17,6 +17,9 @@ namespace Favores_Back_mvc.Controllers
         // GET: Favor
         public async Task<IActionResult> Index()
         {
+
+       
+
             var favores = await _context.Favores
                 .Include(f => f.Creador)
                 .ToListAsync();
@@ -37,12 +40,11 @@ namespace Favores_Back_mvc.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Buscar el primer usuario disponible (temporal hasta tener sesión)
+                // TEMPORAL HASTA LOGIN
                 var creador = await _context.Usuarios.FirstOrDefaultAsync();
-
                 if (creador == null)
                 {
-                    ModelState.AddModelError("", "Debe existir al menos un usuario antes de crear un favor.");
+                    ModelState.AddModelError("", "Debe existir al menos un usuario para crear un favor.");
                     return RedirectToAction("Create", "Usuario");
                 }
 
@@ -53,6 +55,7 @@ namespace Favores_Back_mvc.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             return View(favor);
         }
 
@@ -64,17 +67,20 @@ namespace Favores_Back_mvc.Controllers
 
             var favor = await _context.Favores
                 .Include(f => f.Creador)
+                .Include(f => f.Postulaciones)
+                    .ThenInclude(p => p.Usuario)
+                .Include(f => f.Chat)
                 .FirstOrDefaultAsync(f => f.Id == id);
 
             if (favor == null)
                 return NotFound();
 
-            // Pasa el creador a la vista mediante ViewData
             ViewData["CreadorNombre"] = favor.Creador?.Nombre ?? "Usuario desconocido";
             ViewData["CreadorEmail"] = favor.Creador?.Email ?? "Sin correo";
 
             return View(favor);
         }
+
         // GET: Favor/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -100,14 +106,13 @@ namespace Favores_Back_mvc.Controllers
             {
                 try
                 {
-                    // Recuperar el registro original para conservar el CreadorId
-                    var favorExistente = await _context.Favores.AsNoTracking().FirstOrDefaultAsync(f => f.Id == id);
+                    var original = await _context.Favores.AsNoTracking()
+                        .FirstOrDefaultAsync(f => f.Id == id);
 
-                    if (favorExistente == null)
+                    if (original == null)
                         return NotFound();
 
-                    // Mantiene el creador original
-                    favor.CreadorId = favorExistente.CreadorId;
+                    favor.CreadorId = original.CreadorId;
 
                     _context.Update(favor);
                     await _context.SaveChangesAsync();
@@ -125,7 +130,6 @@ namespace Favores_Back_mvc.Controllers
 
             return View(favor);
         }
-
 
         // GET: Favor/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -152,9 +156,9 @@ namespace Favores_Back_mvc.Controllers
             if (favor != null)
             {
                 _context.Favores.Remove(favor);
-                await _context.SaveChangesAsync();
             }
 
+            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
     }

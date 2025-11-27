@@ -9,15 +9,24 @@ namespace Favores_Back_mvc
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Base de datos
             builder.Services.AddDbContext<FavoresDBContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("FavoresDBConnection")));
 
-            // Add services to the container.
+            // MVC
             builder.Services.AddControllersWithViews();
+
+            // Session correctamente configurada
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(60);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            // Pipeline
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
@@ -29,11 +38,14 @@ namespace Favores_Back_mvc
 
             app.UseRouting();
 
+            // ACTIVA SESIÓN EN EL MOMENTO CORRECTO
+            app.UseSession();
+
             app.UseAuthorization();
 
             app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+            name: "default",
+            pattern: "{controller=Login}/{action=Index}/{id?}");
 
             app.Run();
         }

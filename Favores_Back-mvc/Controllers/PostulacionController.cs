@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Favores_Back_mvc.Context;
 using Favores_Back_mvc.Models;
@@ -22,149 +17,106 @@ namespace Favores_Back_mvc.Controllers
         // GET: Postulacion
         public async Task<IActionResult> Index()
         {
-            var favoresDBContext = _context.Postulaciones.Include(p => p.Favor).Include(p => p.Usuario);
-            return View(await favoresDBContext.ToListAsync());
-        }
-
-        // GET: Postulacion/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var postulacion = await _context.Postulaciones
+            var postulaciones = await _context.Postulaciones
                 .Include(p => p.Favor)
                 .Include(p => p.Usuario)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (postulacion == null)
-            {
-                return NotFound();
-            }
+                .ToListAsync();
 
-            return View(postulacion);
+            return View(postulaciones);
         }
 
-        // GET: Postulacion/Create
-        public IActionResult Create()
-        {
-            ViewData["FavorId"] = new SelectList(_context.Favores, "Id", "Categoria");
-            ViewData["UsuarioId"] = new SelectList(_context.Usuarios, "Id", "Email");
-            return View();
-        }
-
-        // POST: Postulacion/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // ============================================================
+        // POSTULARSE A UN FAVOR
+        // ============================================================
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Mensaje,FavorId,UsuarioId,FechaPostulacion")] Postulacion postulacion)
+        public async Task<IActionResult> Postularse(int favorId)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(postulacion);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["FavorId"] = new SelectList(_context.Favores, "Id", "Categoria", postulacion.FavorId);
-            ViewData["UsuarioId"] = new SelectList(_context.Usuarios, "Id", "Email", postulacion.UsuarioId);
-            return View(postulacion);
-        }
+            var usuarioId = HttpContext.Session.GetInt32("UsuarioId");
 
-        // GET: Postulacion/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
+            if (usuarioId == null)
             {
-                return NotFound();
+                TempData["Error"] = "Debes iniciar sesión.";
+                return RedirectToAction("Details", "Favor", new { id = favorId });
             }
 
-            var postulacion = await _context.Postulaciones.FindAsync(id);
-            if (postulacion == null)
-            {
-                return NotFound();
-            }
-            ViewData["FavorId"] = new SelectList(_context.Favores, "Id", "Categoria", postulacion.FavorId);
-            ViewData["UsuarioId"] = new SelectList(_context.Usuarios, "Id", "Email", postulacion.UsuarioId);
-            return View(postulacion);
-        }
+            // Evitar doble postulación
+            bool yaPostulo = await _context.Postulaciones
+                .AnyAsync(p => p.FavorId == favorId && p.UsuarioId == usuarioId.Value);
 
-        // POST: Postulacion/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Mensaje,FavorId,UsuarioId,FechaPostulacion")] Postulacion postulacion)
-        {
-            if (id != postulacion.Id)
+            if (yaPostulo)
             {
-                return NotFound();
+                TempData["Error"] = "Ya te postulaste a este favor.";
+                return RedirectToAction("Details", "Favor", new { id = favorId });
             }
 
-            if (ModelState.IsValid)
+            var postulacion = new Postulacion
             {
-                try
-                {
-                    _context.Update(postulacion);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!PostulacionExists(postulacion.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["FavorId"] = new SelectList(_context.Favores, "Id", "Categoria", postulacion.FavorId);
-            ViewData["UsuarioId"] = new SelectList(_context.Usuarios, "Id", "Email", postulacion.UsuarioId);
-            return View(postulacion);
-        }
+                FavorId = favorId,
+                UsuarioId = usuarioId.Value,
+                Mensaje = "Me gustaría ayudarte",
+                FechaPostulacion = DateTime.Now,
+                Estado = "Pendiente"
+            };
 
-        // GET: Postulacion/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var postulacion = await _context.Postulaciones
-                .Include(p => p.Favor)
-                .Include(p => p.Usuario)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (postulacion == null)
-            {
-                return NotFound();
-            }
-
-            return View(postulacion);
-        }
-
-        // POST: Postulacion/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var postulacion = await _context.Postulaciones.FindAsync(id);
-            if (postulacion != null)
-            {
-                _context.Postulaciones.Remove(postulacion);
-            }
-
+            _context.Postulaciones.Add(postulacion);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            TempData["Ok"] = "Postulación enviada correctamente.";
+            return RedirectToAction("Details", "Favor", new { id = favorId });
         }
 
-        private bool PostulacionExists(int id)
+        // ============================================================
+        // ACEPTAR POSTULACIÓN → CREA CHAT AUTOMÁTICAMENTE
+        // ============================================================
+        [HttpPost]
+        public async Task<IActionResult> Aceptar(int id)
         {
-            return _context.Postulaciones.Any(e => e.Id == id);
+            var postulacion = await _context.Postulaciones
+                .Include(p => p.Favor)
+                .Include(p => p.Usuario)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (postulacion == null)
+                return NotFound();
+
+            if (postulacion.Favor == null || postulacion.Usuario == null)
+            {
+                TempData["Error"] = "La postulación no tiene datos suficientes.";
+                return RedirectToAction("Index");
+            }
+
+            // 1) Cambiar estado de la postulación
+            postulacion.Estado = "Aceptada";
+            _context.Postulaciones.Update(postulacion);
+
+            // 2) Cambiar estado del favor
+            postulacion.Favor.Estado = "En curso";
+            _context.Favores.Update(postulacion.Favor);
+
+            // 3) Revisar si ya existe chat
+            var existingChat = await _context.Chats
+                .FirstOrDefaultAsync(c => c.FavorId == postulacion.FavorId);
+
+            if (existingChat == null)
+            {
+                var chat = new Chat
+                {
+                    FavorId = postulacion.FavorId,
+                    CreadorId = postulacion.Favor.CreadorId,
+                    EjecutorId = postulacion.UsuarioId
+                };
+
+                _context.Chats.Add(chat);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                // Ya existe, solo guardar cambios
+                await _context.SaveChangesAsync();
+            }
+
+            TempData["Ok"] = "Postulación aceptada. Chat creado.";
+            return RedirectToAction("Details", "Favor", new { id = postulacion.FavorId });
         }
     }
 }
