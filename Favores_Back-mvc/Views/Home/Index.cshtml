@@ -1,12 +1,135 @@
 ﻿@{
     ViewData["Title"] = "Inicio";
+    var usuarioId = Context.Session.GetInt32("UsuarioId");
+    var rol = Context.Session.GetString("UsuarioRol");
 }
 
-<div class="text-center mt-5">
-    <h1 class="display-4 fw-bold text-primary">Bienvenido a Favores</h1>
-    <p class="lead text-muted">Conectá personas, resolvé tareas y ganá reputación.</p>
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-    <a asp-controller="Favor" asp-action="Index" class="btn btn-lg btn-primary mt-4">
-        Ver Favores Disponibles
-    </a>
+<style>
+    .hero {
+        background: linear-gradient(135deg, #007bff, #6610f2);
+        color: white;
+        border-radius: 18px;
+        padding: 60px 40px;
+        text-align: center;
+        box-shadow: 0 8px 20px rgba(0,0,0,.15);
+    }
+
+    .category-card {
+        transition: all .2s ease;
+        cursor: pointer;
+    }
+
+        .category-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 20px rgba(0,0,0,.15);
+        }
+</style>
+
+<div class="container mt-4">
+
+    <!-- =============================
+         HERO SECTION
+    ============================== -->
+    <div class="hero mb-5">
+        <h1 class="fw-bold mb-3">Bienvenido a Favores</h1>
+        <p class="lead mb-4">
+            Conectamos personas que necesitan ayuda con quienes pueden ayudar.
+        </p>
+
+        @if (usuarioId == null)
+        {
+            <a asp-controller="Login" asp-action="Index" class="btn btn-light btn-lg fw-bold px-4">
+                Iniciar sesión
+            </a>
+        }
+        else
+        {
+            <a asp-controller="Favor" asp-action="Index" class="btn btn-light btn-lg fw-bold px-4 me-2">
+                Ver favores
+            </a>
+
+            @if (rol == "ADMIN")
+            {
+                <a asp-controller="Favor" asp-action="Create" class="btn btn-warning btn-lg fw-bold px-4">
+                    Crear favor
+                </a>
+            }
+        }
+    </div>
+
+
+    <!-- =============================
+         CATEGORÍAS DESTACADAS
+    ============================== -->
+    <h3 class="fw-bold mb-3">Categorías destacadas</h3>
+
+    <div class="row g-4 mb-5">
+
+        <div class="col-6 col-md-3">
+            <div class="card category-card p-3 text-center border-0 shadow-sm">
+                <i class="bi bi-tools display-5 text-primary"></i>
+                <h6 class="mt-2 fw-bold">Hogar</h6>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card category-card p-3 text-center border-0 shadow-sm">
+                <i class="bi bi-truck display-5 text-primary"></i>
+                <h6 class="mt-2 fw-bold">Mudanzas</h6>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card category-card p-3 text-center border-0 shadow-sm">
+                <i class="bi bi-bag-heart display-5 text-primary"></i>
+                <h6 class="mt-2 fw-bold">Cuidado</h6>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card category-card p-3 text-center border-0 shadow-sm">
+                <i class="bi bi-bicycle display-5 text-primary"></i>
+                <h6 class="mt-2 fw-bold">Mandados</h6>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- =============================
+         CÓMO FUNCIONA
+    ============================== -->
+    <h3 class="fw-bold mb-3">¿Cómo funciona?</h3>
+
+    <div class="row g-4 mb-5">
+
+        <div class="col-md-4">
+            <div class="card h-100 p-4 border-0 shadow-sm text-center">
+                <i class="bi bi-search display-5 text-primary"></i>
+                <h5 class="fw-bold mt-3">1. Explorá favores</h5>
+                <p class="text-muted">Encontrá tareas publicadas por personas que necesitan ayuda.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 p-4 border-0 shadow-sm text-center">
+                <i class="bi bi-person-check display-5 text-primary"></i>
+                <h5 class="fw-bold mt-3">2. Postulate</h5>
+                <p class="text-muted">Ofrecé tu ayuda y esperá a ser seleccionado.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 p-4 border-0 shadow-sm text-center">
+                <i class="bi bi-chat-dots display-5 text-primary"></i>
+                <h5 class="fw-bold mt-3">3. Chateá y coordiná</h5>
+                <p class="text-muted">Una vez aceptado, entrás al chat y coordinan todo.</p>
+            </div>
+        </div>
+
+    </div>
+
 </div>
