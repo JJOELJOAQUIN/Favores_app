@@ -34,6 +34,9 @@ namespace Favores_Back_mvc.Models
         public int CreadorId { get; set; }
         public Usuario? Creador { get; set; }
 
+        public DateTime FechaCreacion { get; set; } = DateTime.Now;
+
+
         public ICollection<Postulacion> Postulaciones { get; set; } = new List<Postulacion>();
 
 

@@ -24,7 +24,6 @@ namespace Favores_Back_mvc.Controllers
 
         // ============================
         // LOGIN (POST)
-        // ============================
         [HttpPost]
         public async Task<IActionResult> Index(string email, string password)
         {
@@ -43,9 +42,9 @@ namespace Favores_Back_mvc.Controllers
                 return View();
             }
 
-            // Guardar sesión
             HttpContext.Session.SetInt32("UsuarioId", usuario.Id);
             HttpContext.Session.SetString("UsuarioEmail", usuario.Email);
+            HttpContext.Session.SetString("UsuarioRol", usuario.Rol); // 🔥 AGREGADO
 
             return RedirectToAction("Index", "Favor");
         }
@@ -60,19 +59,10 @@ namespace Favores_Back_mvc.Controllers
 
         // ============================
         // REGISTRO (POST)
-        // ============================
         [HttpPost]
         public async Task<IActionResult> Register(string nombre, string email, string password)
         {
-            if (string.IsNullOrWhiteSpace(nombre) ||
-                string.IsNullOrWhiteSpace(email) ||
-                string.IsNullOrWhiteSpace(password))
-            {
-                TempData["Error"] = "Completa todos los campos.";
-                return View();
-            }
-
-            if (await _context.Usuarios.AnyAsync(u => u.Email == email.Trim()))
+            if (await _context.Usuarios.AnyAsync(u => u.Email == email))
             {
                 TempData["Error"] = "Ya existe un usuario con ese email.";
                 return View();
@@ -83,6 +73,7 @@ namespace Favores_Back_mvc.Controllers
                 Nombre = nombre.Trim(),
                 Email = email.Trim(),
                 PasswordHash = password,
+                Rol = "USER", // 🔥 Por defecto
                 Activo = true,
                 Reputacion = 0
             };
@@ -90,12 +81,13 @@ namespace Favores_Back_mvc.Controllers
             _context.Usuarios.Add(usuario);
             await _context.SaveChangesAsync();
 
-            // Auto-login luego del registro
             HttpContext.Session.SetInt32("UsuarioId", usuario.Id);
             HttpContext.Session.SetString("UsuarioEmail", usuario.Email);
+            HttpContext.Session.SetString("UsuarioRol", usuario.Rol);
 
             return RedirectToAction("Index", "Favor");
         }
+
 
         // ============================
         // LOGOUT

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Favores_Back_mvc.Models
 {
@@ -16,10 +17,34 @@ namespace Favores_Back_mvc.Models
         public string PasswordHash { get; set; } = null!;
 
         public string? FotoPerfil { get; set; }
+
+        public DateTime FechaRegistro { get; set; } = DateTime.Now;
+
+
+        // ============================
+        //   ROLES
+        // ============================
+        // ADMIN  → puede crear favores
+        // USER   → solo se postula y ejecuta favores
+        [Required]
+        public string Rol { get; set; } = "USER";
+
+        // ============================
+        //   REPUTACIÓN
+        // ============================
         public double Reputacion { get; set; } = 0;
+
+        // Cantidad de calificaciones recibidas
+        public int CantidadCalificaciones { get; set; } = 0;
+
+        // ============================
+        //   ESTADO
+        // ============================
         public bool Activo { get; set; } = true;
 
-        // Relación uno a muchos con Favor
+        // ============================
+        //   RELACIONES
+        // ============================
         public ICollection<Favor>? FavoresCreados { get; set; }
     }
 }

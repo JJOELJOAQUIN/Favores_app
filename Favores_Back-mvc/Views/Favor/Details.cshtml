@@ -2,92 +2,107 @@
 @using Favores_Back_mvc.Models
 @using System.Linq
 
-<hr />
+<div class="card shadow-sm p-4">
 
-<h3>DEBUG:</h3>
+    <h2 class="mb-3">@Model.Titulo</h2>
+    <p class="text-muted">@Model.Descripcion</p>
 
-<p>UsuarioId sesión: @Context.Session.GetInt32("UsuarioId")</p>
-<p>CreadorId del Favor: @Model.CreadorId</p>
-<p>Total Postulaciones: @Model.Postulaciones.Count</p>
+    <div class="mt-3">
+        <span class="badge bg-primary">Categoría: @Model.Categoria</span>
+        <span class="badge bg-info">Estado: @Model.Estado</span>
+    </div>
 
-@if (TempData["Ok"] != null)
-{
-    <div class="alert alert-success">@TempData["Ok"]</div>
-}
+    <hr />
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
+    <h5>Información del creador</h5>
+    <p>
+        <strong>@Model.Creador?.Nombre</strong><br />
+        <small>@Model.Creador?.Email</small>
+    </p>
 
-@{
-    var usuarioId = Context.Session.GetInt32("UsuarioId");
-    bool esCreador = usuarioId.HasValue && usuarioId.Value == Model.CreadorId;
+    <hr />
 
-    var postulaciones = (Model.Postulaciones as IEnumerable<Postulacion>)
-                        ?? Enumerable.Empty<Postulacion>();
+    @* ---------------------------
+       LÓGICA DE POSTULACIONES
+       --------------------------- *@
 
-    bool yaSePostulo = usuarioId.HasValue
-        && postulaciones.Any(p => p.UsuarioId == usuarioId.Value);
-}
+    @{
+        var usuarioId = Context.Session.GetInt32("UsuarioId");
+        bool esCreador = usuarioId.HasValue && usuarioId.Value == Model.CreadorId;
 
+        var postulaciones = Model.Postulaciones ?? new List<Postulacion>();
 
-@if (usuarioId == null)
-{
-    <div class="alert alert-warning">Debes iniciar sesión para postularte.</div>
-}
-else if (esCreador)
-{
-    <div class="alert alert-info">Eres el creador del favor. No puedes postularte.</div>
-}
-else if (yaSePostulo)
-{
-    <div class="alert alert-success">Ya te postulaste a este favor.</div>
-}
-else
-{
-    <form asp-controller="Postulacion" asp-action="Postularse" method="post">
-        <input type="hidden" name="favorId" value="@Model.Id" />
-        <button type="submit" class="btn btn-primary mt-3">Postularse</button>
-    </form>
-}
+        bool yaSePostulo = usuarioId.HasValue &&
+        postulaciones.Any(p => p.UsuarioId == usuarioId.Value);
+    }
 
-<hr />
+    @if (usuarioId == null)
+    {
+        <div class="alert alert-warning">
+            Debes iniciar sesión para postularte.
+        </div>
+    }
+    else if (esCreador)
+    {
+        <div class="alert alert-info">
+            Eres el creador del favor. No puedes postularte.
+        </div>
+    }
+    else if (yaSePostulo)
+    {
+        <div class="alert alert-success">
+            Ya te postulaste a este favor.
+        </div>
+    }
+    else
+    {
+        <form asp-controller="Postulacion" asp-action="Postularse" method="post">
+            <input type="hidden" name="favorId" value="@Model.Id" />
+            <button type="submit" class="btn btn-primary mt-2">Postularme</button>
+        </form>
+    }
 
-<h4 class="mt-4">Postulaciones</h4>
+    <hr />
 
-@if (Model.Postulaciones == null || !Model.Postulaciones.Any())
-{
-    <p class="text-muted">No hay postulaciones aún.</p>
-}
-else
-{
-    <ul class="list-group">
-        @foreach (var p in Model.Postulaciones)
-        {
-            <li class="list-group-item d-flex justify-content-between">
-                <span>
-                    <strong>@(p.Usuario?.Email ?? "Usuario desconocido")</strong><br />
-                    @p.Mensaje
-                </span>
+    @* ---------------------------
+       LISTADO DE POSTULACIONES
+       --------------------------- *@
 
-                @if (usuarioId == Model.CreadorId && p.Estado == "Pendiente")
-                {
-                    <form asp-controller="Postulacion" asp-action="Aceptar" method="post">
-                        <input type="hidden" name="id" value="@p.Id" />
-                        <button type="submit" class="btn btn-success btn-sm">Aceptar</button>
-                    </form>
-                }
-            </li>
-        }
-    </ul>
+    <h4>Postulaciones</h4>
 
-}
+    @if (!postulaciones.Any())
+    {
+        <p class="text-muted">No hay postulaciones aún.</p>
+    }
+    else
+    {
+        <ul class="list-group">
+            @foreach (var p in postulaciones)
+            {
+                <li class="list-group-item d-flex justify-content-between">
 
-<hr />
+                    <div>
+                        <strong>@(p.Usuario?.Email ?? "Usuario desconocido")</strong><br />
+                        @p.Mensaje
+                    </div>
 
-@if (Model.Chat != null)
-{
-    <a asp-controller="Chat" asp-action="Details" asp-route-id="@Model.Chat.Id"
-       class="btn btn-primary mt-3">Ir al Chat</a>
-}
+                    @if (usuarioId == Model.CreadorId && p.Estado == "Pendiente")
+                    {
+                        <form asp-controller="Postulacion" asp-action="Aceptar" method="post">
+                            <input type="hidden" name="id" value="@p.Id" />
+                            <button type="submit" class="btn btn-success btn-sm">Aceptar</button>
+                        </form>
+                    }
+
+                </li>
+            }
+        </ul>
+    }
+
+    @if (Model.Chat != null)
+    {
+        <a asp-controller="Chat" asp-action="Details" asp-route-id="@Model.Chat.Id"
+           class="btn btn-outline-primary mt-3">Ir al Chat</a>
+    }
+
+</div>

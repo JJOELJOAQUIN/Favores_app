@@ -11,3 +11,13 @@
     background: linear-gradient(90deg, #007bff 0%, #00b4d8 100%);
 }
 
+.profile-card {
+    border-radius: 15px;
+}
+
+.profile-avatar {
+    width: 130px;
+    height: 130px;
+    object-fit: cover;
+    border-radius: 50%;
+}

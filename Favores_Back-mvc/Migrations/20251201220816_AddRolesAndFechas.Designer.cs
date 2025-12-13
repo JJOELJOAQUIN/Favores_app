@@ -4,6 +4,7 @@ using Favores_Back_mvc.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Favores_Back_mvc.Migrations
 {
     [DbContext(typeof(FavoresDBContext))]
-    partial class FavoresDBContextModelSnapshot : ModelSnapshot
+    [Migration("20251201220816_AddRolesAndFechas")]
+    partial class AddRolesAndFechas
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

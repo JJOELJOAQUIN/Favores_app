@@ -4,6 +4,7 @@ using Favores_Back_mvc.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Favores_Back_mvc.Migrations
 {
     [DbContext(typeof(FavoresDBContext))]
-    partial class FavoresDBContextModelSnapshot : ModelSnapshot
+    [Migration("20251201214454_AddUserRolesAndRatings")]
+    partial class AddUserRolesAndRatings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -115,9 +118,6 @@ namespace Favores_Back_mvc.Migrations
                     b.Property<string>("Estado")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("datetime2");
 
                     b.Property<decimal>("Recompensa")
                         .HasPrecision(10, 2)
@@ -260,9 +260,6 @@ namespace Favores_Back_mvc.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("FechaRegistro")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("FotoPerfil")
                         .HasColumnType("nvarchar(max)");

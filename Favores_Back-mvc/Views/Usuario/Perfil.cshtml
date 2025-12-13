@@ -1,0 +1,52 @@
+﻿@model Favores_Back_mvc.Models.Usuario
+
+@{
+    ViewData["Title"] = "Mi Perfil";
+}
+
+<div class="container mt-4">
+
+    @if (TempData["Ok"] != null)
+    {
+        <div class="alert alert-success">@TempData["Ok"]</div>
+    }
+
+    <div class="card shadow-lg border-0 rounded-3">
+        <div class="card-body p-4 d-flex">
+
+            <!-- FOTO -->
+            <div class="me-4 text-center">
+                <img src="@(Model.FotoPerfil ?? "/img/default-user.png")"
+                     class="rounded-circle border"
+                     style="width: 130px; height: 130px; object-fit: cover;" />
+
+                <p class="mt-2 text-muted">@Model.Email</p>
+            </div>
+
+            <!-- DATOS PRINCIPALES -->
+            <div class="flex-grow-1">
+                <h3>@Model.Nombre</h3>
+
+                <p class="mb-1">
+                    <strong>Reputación:</strong>
+                    <span class="badge bg-warning text-dark">@Model.Reputacion</span> ⭐
+                </p>
+
+                <p class="mb-1">
+                    <strong>Rol:</strong>
+                    <span class="badge bg-primary">@Model.Rol</span>
+                </p>
+
+                <p>
+                    <strong>Estado:</strong>
+                    @(Model.Activo ? "Activo" : "Inactivo")
+                </p>
+
+                <a asp-action="EditarPerfil" class="btn btn-outline-primary mt-3">
+                    Editar Perfil
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>

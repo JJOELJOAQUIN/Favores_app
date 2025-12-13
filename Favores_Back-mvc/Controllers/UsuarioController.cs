@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Favores_Back_mvc.Context;
 using Favores_Back_mvc.Models;
@@ -14,77 +14,89 @@ namespace Favores_Back_mvc.Controllers
             _context = context;
         }
 
-        // GET: Usuario
-        public async Task<IActionResult> Index()
+        // ============================
+        // PERFIL
+        // ============================
+        public async Task<IActionResult> Perfil()
         {
-            var usuarios = await _context.Usuarios.ToListAsync();
-            return View(usuarios);
+            var usuarioId = HttpContext.Session.GetInt32("UsuarioId");
+
+            if (usuarioId == null)
+                return RedirectToAction("Index", "Login");
+
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.Id == usuarioId.Value);
+
+            if (usuario == null)
+                return RedirectToAction("Logout", "Login");
+
+            return View(usuario);
+        }
+        // ============================
+        // EDITAR PERFIL (GET)
+        // ============================
+        public async Task<IActionResult> EditarPerfil()
+        {
+            var usuarioId = HttpContext.Session.GetInt32("UsuarioId");
+
+            if (usuarioId == null)
+                return RedirectToAction("Index", "Login");
+
+            var usuario = await _context.Usuarios.FindAsync(usuarioId.Value);
+
+            if (usuario == null)
+                return RedirectToAction("Index", "Login");
+
+            return View(usuario);
         }
 
-        // GET: Usuario/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Usuario/Create
+        // ============================
+        // EDITAR PERFIL (POST)
+        // ============================
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Nombre,Email,PasswordHash,FotoPerfil")] Usuario usuario)
-        {
-            if (ModelState.IsValid)
-            {
-                usuario.Activo = true;
-                usuario.Reputacion = 0;
-
-                _context.Add(usuario);
-                await _context.SaveChangesAsync();
-
-                return RedirectToAction("Index", "Favor");
-            }
-
-            return View(usuario);
-        }
-
-        // GET: Usuario/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (usuario == null) return NotFound();
-
-            return View(usuario);
-        }
-
-        // GET: Usuario/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (usuario == null) return NotFound();
-
-            return View(usuario);
-        }
-
-        // POST: Usuario/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> EditarPerfil(int id, string nombre, string email, IFormFile? foto)
         {
             var usuario = await _context.Usuarios.FindAsync(id);
-            if (usuario != null)
+            if (usuario == null)
+                return NotFound();
+
+            // Validaciones
+            if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(email))
             {
-                _context.Usuarios.Remove(usuario);
-                await _context.SaveChangesAsync();
+                TempData["Error"] = "Los campos Nombre y Email son obligatorios.";
+                return View(usuario);
             }
 
-            return RedirectToAction(nameof(Index));
+            // Guardar la foto si se sube una
+            if (foto != null && foto.Length > 0)
+            {
+                var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+
+                if (!Directory.Exists(uploadsPath))
+                    Directory.CreateDirectory(uploadsPath);
+
+                var fileName = $"{Guid.NewGuid()}_{foto.FileName}";
+                var finalPath = Path.Combine(uploadsPath, fileName);
+
+                using var stream = new FileStream(finalPath, FileMode.Create);
+                await foto.CopyToAsync(stream);
+
+                usuario.FotoPerfil = "/uploads/" + fileName;
+            }
+
+            usuario.Nombre = nombre.Trim();
+            usuario.Email = email.Trim();
+
+            _context.Usuarios.Update(usuario);
+            await _context.SaveChangesAsync();
+
+            TempData["Ok"] = "Perfil actualizado correctamente.";
+
+            // actualizar sesión por si cambia el email
+            HttpContext.Session.SetString("UsuarioEmail", usuario.Email);
+
+            return RedirectToAction("Perfil");
         }
+
     }
 }

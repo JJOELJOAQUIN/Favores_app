@@ -11,10 +11,18 @@
 
 <body class="bg-light">
 
+    @{
+        var usuarioId = Context.Session.GetInt32("UsuarioId");
+        var usuarioEmail = Context.Session.GetString("UsuarioEmail");
+        var usuarioRol = Context.Session.GetString("UsuarioRol") ?? "USER";
+    }
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
         <div class="container">
 
-            <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">Favores</a>
+            <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
+                Favores
+            </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -24,6 +32,7 @@
 
                 <ul class="navbar-nav ms-auto">
 
+                    <!-- PUBLIC LINKS -->
                     <li class="nav-item">
                         <a class="nav-link text-white" asp-controller="Home" asp-action="Index">Inicio</a>
                     </li>
@@ -32,23 +41,50 @@
                         <a class="nav-link text-white" asp-controller="Favor" asp-action="Index">Favores</a>
                     </li>
 
-                    <!-- ==========================
-                         LOGIN / LOGOUT DINÁMICO
-                    =========================== -->
-                    @if (Context.Session.GetInt32("UsuarioId") == null)
+                    <!-- ============================================
+                         USUARIO NO LOGUEADO
+                    ============================================= -->
+                    @if (usuarioId == null)
                     {
-                        <!-- Usuario NO logueado -->
                         <li class="nav-item">
                             <a class="nav-link text-white" asp-controller="Login" asp-action="Index">
                                 Iniciar sesión
                             </a>
                         </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link text-white" asp-controller="Login" asp-action="Register">
+                                Crear cuenta
+                            </a>
+                        </li>
                     }
                     else
                     {
-                        <!-- Usuario logueado -->
-                        <li class="nav-item d-flex align-items-center text-white mx-2">
-                            @Context.Session.GetString("UsuarioEmail")
+                        <!-- ============================================
+                             ADMIN → CREAR FAVOR
+                        ============================================= -->
+                        @if (usuarioRol == "ADMIN")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-warning fw-bold"
+                                   asp-controller="Favor" asp-action="Create">
+                                    Crear Favor
+                                </a>
+                            </li>
+                        }
+
+                        <!-- ============================================
+                             PERFIL + EMAIL + LOGOUT
+                        ============================================= -->
+                        <li class="nav-item">
+                            <a class="nav-link text-white" asp-controller="Usuario" asp-action="Perfil">
+                                Mi Perfil
+                            </a>
+                        </li>
+
+                        <li class="nav-item d-flex align-items-center text-white mx-3">
+                            @usuarioEmail
+                            <span class="badge bg-dark ms-2">@usuarioRol</span>
                         </li>
 
                         <li class="nav-item">
@@ -57,8 +93,8 @@
                             </a>
                         </li>
                     }
-
                 </ul>
+
             </div>
         </div>
     </nav>
@@ -69,7 +105,7 @@
 
     <footer class="bg-primary text-white text-center py-3 mt-auto fixed-bottom">
         <div class="container">
-            <p class="mb-0">&copy; @DateTime.Now.Year - Favores App | Proyecto MVC</p>
+            <p class="mb-0">&copy; @DateTime.Now.Year - Favores App</p>
         </div>
     </footer>
 
