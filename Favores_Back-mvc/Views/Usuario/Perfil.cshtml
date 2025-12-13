@@ -11,42 +11,63 @@
         <div class="alert alert-success">@TempData["Ok"]</div>
     }
 
-    <div class="card shadow-lg border-0 rounded-3">
-        <div class="card-body p-4 d-flex">
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
 
-            <!-- FOTO -->
-            <div class="me-4 text-center">
-                <img src="@(Model.FotoPerfil ?? "/img/default-user.png")"
-                     class="rounded-circle border"
-                     style="width: 130px; height: 130px; object-fit: cover;" />
+        <!-- HEADER MODERNO -->
+        <div class="bg-primary text-white p-4 d-flex flex-column align-items-center position-relative">
 
-                <p class="mt-2 text-muted">@Model.Email</p>
+            <!-- AVATAR -->
+            <img src="@(Model.FotoPerfil ?? "/img/default-user.png")"
+                 class="rounded-circle border border-3 border-white shadow"
+                 style="width: 120px; height: 120px; object-fit: cover;" />
+
+            <h2 class="mt-3 fw-bold">@Model.Nombre</h2>
+            <p class="opacity-75 mb-1">@Model.Email</p>
+
+            <span class="badge bg-light text-primary mt-2" style="font-size: 0.9rem;">
+                Rol: <strong>@Model.Rol</strong>
+            </span>
+        </div>
+
+        <!-- BODY -->
+        <div class="p-4">
+
+            <!-- TARJETAS DE ESTADISTICAS -->
+            <div class="row text-center mb-4">
+
+                <div class="col-md-4 mb-3">
+                    <div class="p-3 bg-light rounded-3 shadow-sm">
+                        <h5 class="fw-bold text-primary">Reputación</h5>
+                        <p class="fs-4 fw-bold">@Model.Reputacion ⭐</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <div class="p-3 bg-light rounded-3 shadow-sm">
+                        <h5 class="fw-bold text-primary">Calificaciones</h5>
+                        <p class="fs-4 fw-bold">@Model.CantidadCalificaciones</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <div class="p-3 bg-light rounded-3 shadow-sm">
+                        <h5 class="fw-bold text-primary">Miembro desde</h5>
+                        <p class="fs-5 fw-bold">@Model.FechaRegistro.ToShortDateString()</p>
+                    </div>
+                </div>
+
             </div>
 
-            <!-- DATOS PRINCIPALES -->
-            <div class="flex-grow-1">
-                <h3>@Model.Nombre</h3>
-
-                <p class="mb-1">
-                    <strong>Reputación:</strong>
-                    <span class="badge bg-warning text-dark">@Model.Reputacion</span> ⭐
-                </p>
-
-                <p class="mb-1">
-                    <strong>Rol:</strong>
-                    <span class="badge bg-primary">@Model.Rol</span>
-                </p>
-
-                <p>
-                    <strong>Estado:</strong>
-                    @(Model.Activo ? "Activo" : "Inactivo")
-                </p>
-
-                <a asp-action="EditarPerfil" class="btn btn-outline-primary mt-3">
+            <!-- BOTÓN EDITAR -->
+            <div class="text-center mt-4">
+                <a asp-action="EditarPerfil"
+                   class="btn btn-primary btn-lg px-4 shadow-sm">
                     Editar Perfil
                 </a>
             </div>
 
         </div>
+
     </div>
+
 </div>

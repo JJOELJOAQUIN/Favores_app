@@ -1,70 +1,103 @@
-
-
 @model IEnumerable<Favores_Back_mvc.Models.Favor>
 
 @{
-    ViewData["Title"] = "Listado de Favores";
+    ViewData["Title"] = "Favores";
+    var usuarioId = Context.Session.GetInt32("UsuarioId");
+    var rol = Context.Session.GetString("UsuarioRol");
 }
 
-<h2 class="text-center mb-4">Listado de Favores</h2>
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-<div class="text-end mb-3">
-    <a asp-action="Create" class="btn btn-primary">+ Nuevo Favor</a>
-</div>
+<style>
+    .favor-card {
+        transition: all .2s ease;
+        border-radius: 16px;
+    }
 
-<div class="row row-cols-1 row-cols-md-3 g-4">
-    @foreach (var favor in Model)
+        .favor-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 20px rgba(0,0,0,.15);
+        }
+
+    .favor-img {
+        height: 150px;
+        object-fit: cover;
+        border-radius: 16px 16px 0 0;
+    }
+</style>
+
+<div class="container mt-4">
+
+    <!-- HEADER + BOTÓN CREAR -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Favores disponibles</h2>
+
+        @if (rol == "ADMIN")
+        {
+            <a asp-controller="Favor" asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Crear Favor
+            </a>
+        }
+    </div>
+
+    <!-- LISTADO -->
+    <div class="row g-4">
+
+        @foreach (var f in Model)
+        {
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card shadow-sm border-0 favor-card">
+
+                    <!-- IMAGEN -->
+                    <img src="/img/categorias/@(f.Categoria?.ToLower() ?? "default").jpg"
+                         onerror="this.src='/img/default-favor.jpg'"
+                         class="favor-img" />
+
+                    <div class="card-body">
+
+                        <!-- TÍTULO -->
+                        <h5 class="fw-bold">@f.Titulo</h5>
+
+                        <!-- CATEGORÍA -->
+                        <span class="badge bg-info text-dark">
+                            <i class="bi bi-tag"></i> @f.Categoria
+                        </span>
+
+                        <!-- UBICACIÓN -->
+                        <p class="mt-2 mb-1 text-muted">
+                            <i class="bi bi-geo-alt"></i> @f.Ubicacion
+                        </p>
+
+                        <!-- RECOMPENSA -->
+                        <p class="fw-bold text-primary mb-1">
+                            <i class="bi bi-cash-coin"></i>
+                            @f.Recompensa @f.TipoRecompensa
+                        </p>
+
+                        <!-- CREADOR -->
+                        <p class="text-muted mb-2">
+                            <i class="bi bi-person-circle"></i>
+                            @(f.Creador?.Nombre ?? "Usuario desconocido")
+                        </p>
+
+                        <!-- BOTÓN VER DETALLE -->
+                        <a asp-controller="Favor" asp-action="Details" asp-route-id="@f.Id"
+                           class="btn btn-outline-primary w-100 mt-2">
+                            Ver detalles
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (!Model.Any())
     {
-        <div class="col">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">@favor.Titulo</h5>
-                    <p class="card-text text-muted">@favor.Categoria</p>
-                    <p class="card-text">
-                        <strong>Ubicación:</strong> @favor.Ubicacion <br />
-                        <strong>Recompensa:</strong> $@favor.Recompensa (@favor.TipoRecompensa)
-                    </p>
-                    <p class="card-text"><small class="text-secondary">Creador: @favor.Creador?.Email</small></p>
-                </div>
-                <div class="card-footer bg-white border-top-0 d-flex justify-content-between">
-                    <a asp-controller="Favor"
-                       asp-action="Details"
-                       asp-route-id="@favor.Id"
-                       class="btn btn-outline-primary btn-sm">
-                        Ver detalle
-                    </a>
-                    <a asp-action="Edit" asp-route-id="@favor.Id" class="btn btn-outline-secondary btn-sm">Editar</a>
-                    <a asp-action="Delete" asp-route-id="@favor.Id" class="btn btn-outline-danger btn-sm">Eliminar</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal Detalle -->
-        <div class="modal fade" id="favorModal_@favor.Id" tabindex="-1" aria-labelledby="favorModalLabel_@favor.Id" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="favorModalLabel_@favor.Id">@favor.Titulo</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p><strong>Descripción:</strong> @favor.Descripcion</p>
-                        <p><strong>Ubicación:</strong> @favor.Ubicacion</p>
-                        <p><strong>Categoría:</strong> @favor.Categoria</p>
-                        <p><strong>Recompensa:</strong> $@favor.Recompensa (@favor.TipoRecompensa)</p>
-                        <p><strong>Estado:</strong> @favor.Estado</p>
-                        <p><strong>Creador:</strong> @favor.Creador?.Email</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                    </div>
-                </div>
-            </div>
+        <div class="alert alert-light border text-center mt-4">
+            <h5>No hay favores disponibles por el momento.</h5>
         </div>
     }
-</div>
 
-<!-- Bootstrap JS -->
-@section Scripts {
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-}
+</div>

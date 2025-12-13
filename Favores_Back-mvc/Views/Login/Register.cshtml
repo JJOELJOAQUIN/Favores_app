@@ -2,30 +2,88 @@
     ViewData["Title"] = "Crear cuenta";
 }
 
-<h2 class="mb-3">Crear cuenta</h2>
+<div class="d-flex justify-content-center align-items-center" style="min-height: 90vh;">
+    <div class="card shadow-lg border-0 rounded-4 p-4" style="width: 420px;">
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
+        <!-- HEADER -->
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-primary">Crear cuenta</h2>
+            <p class="text-muted">Completá tus datos para registrarte</p>
+        </div>
 
-<form method="post">
-    <div class="mb-3">
-        <label>Nombre</label>
-        <input class="form-control" name="nombre" required />
+        <!-- ERRORES -->
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Error"]</div>
+        }
+
+        <form method="post">
+
+            <!-- NOMBRE -->
+            <div class="mb-3">
+                <label class="form-label fw-bold">Nombre</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light">
+                        <i class="bi bi-person"></i>
+                    </span>
+                    <input class="form-control form-control-lg"
+                           name="nombre"
+                           placeholder="Tu nombre"
+                           required />
+                </div>
+            </div>
+
+            <!-- EMAIL -->
+            <div class="mb-3">
+                <label class="form-label fw-bold">Email</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light">
+                        <i class="bi bi-envelope"></i>
+                    </span>
+                    <input class="form-control form-control-lg"
+                           name="email"
+                           type="email"
+                           placeholder="tucorreo@mail.com"
+                           required />
+                </div>
+            </div>
+
+            <!-- PASSWORD -->
+            <div class="mb-3">
+                <label class="form-label fw-bold">Contraseña</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light">
+                        <i class="bi bi-lock"></i>
+                    </span>
+                    <input class="form-control form-control-lg"
+                           name="password"
+                           type="password"
+                           placeholder="••••••••"
+                           required />
+                </div>
+            </div>
+
+            <!-- SELECT ROL -->
+            <div class="mb-3">
+                <label class="form-label fw-bold">Rol del usuario</label>
+                <select class="form-select form-select-lg" name="rol" required>
+                    <option value="USER" selected>Ayudar en favores (USER)</option>
+                    <option value="ADMIN">Crear favores (ADMIN)</option>
+                </select>
+            </div>
+
+            <!-- BOTÓN -->
+            <button class="btn btn-success w-100 btn-lg mt-2 shadow-sm">
+                Crear cuenta
+            </button>
+
+            <div class="text-center mt-3">
+                <a asp-action="Index" class="text-decoration-none fw-bold">
+                    Volver al login
+                </a>
+            </div>
+
+        </form>
+
     </div>
-
-    <div class="mb-3">
-        <label>Email</label>
-        <input class="form-control" name="email" type="email" required />
-    </div>
-
-    <div class="mb-3">
-        <label>Contraseña</label>
-        <input class="form-control" name="password" type="password" required />
-    </div>
-
-    <button class="btn btn-success">Crear cuenta</button>
-
-    <a asp-action="Index" class="btn btn-link">Volver al login</a>
-</form>
+</div>
