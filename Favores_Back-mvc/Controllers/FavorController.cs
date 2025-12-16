@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Favores_Back_mvc.Context;
 using Favores_Back_mvc.Models;
@@ -165,6 +165,10 @@ namespace Favores_Back_mvc.Controllers
             if (id == null)
                 return NotFound();
 
+            var usuarioId = HttpContext.Session.GetInt32("UsuarioId");
+            if (usuarioId == null)
+                return RedirectToAction("Index", "Login");
+
             var favor = await _context.Favores
                 .Include(f => f.Creador)
                 .FirstOrDefaultAsync(f => f.Id == id);
@@ -172,16 +176,16 @@ namespace Favores_Back_mvc.Controllers
             if (favor == null)
                 return NotFound();
 
-            var usuarioId = HttpContext.Session.GetInt32("UsuarioId");
-
-            if (favor.CreadorId != usuarioId && HttpContext.Session.GetString("UsuarioRol") != "ADMIN")
+            // 🔒 SOLO EL CREADOR
+            if (favor.CreadorId != usuarioId)
             {
-                TempData["Error"] = "No tienes permiso para eliminar este favor.";
+                TempData["Error"] = "Solo podés eliminar tus propios favores.";
                 return RedirectToAction("Index");
             }
 
             return View(favor);
         }
+
 
         // ============================
         // ELIMINAR FAVOR (POST)
@@ -190,18 +194,32 @@ namespace Favores_Back_mvc.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var favor = await _context.Favores.FindAsync(id);
+            var usuarioId = HttpContext.Session.GetInt32("UsuarioId");
+
+            if (usuarioId == null)
+                return RedirectToAction("Index", "Login");
+
+            var favor = await _context.Favores
+                .Include(f => f.Chat)
+                .Include(f => f.Postulaciones)
+                .FirstOrDefaultAsync(f => f.Id == id);
 
             if (favor == null)
                 return RedirectToAction("Index");
 
-            var usuarioId = HttpContext.Session.GetInt32("UsuarioId");
-
-            if (favor.CreadorId != usuarioId && HttpContext.Session.GetString("UsuarioRol") != "ADMIN")
+            // 🔒 SOLO EL CREADOR
+            if (favor.CreadorId != usuarioId)
             {
-                TempData["Error"] = "No tienes permiso para eliminar este favor.";
+                TempData["Error"] = "Solo podés eliminar tus propios favores.";
                 return RedirectToAction("Index");
             }
+
+            // 🧹 BORRAR DEPENDENCIAS
+            if (favor.Chat != null)
+                _context.Chats.Remove(favor.Chat);
+
+            if (favor.Postulaciones != null && favor.Postulaciones.Any())
+                _context.Postulaciones.RemoveRange(favor.Postulaciones);
 
             _context.Favores.Remove(favor);
             await _context.SaveChangesAsync();
@@ -209,5 +227,6 @@ namespace Favores_Back_mvc.Controllers
             TempData["Ok"] = "Favor eliminado correctamente.";
             return RedirectToAction(nameof(Index));
         }
+
     }
 }

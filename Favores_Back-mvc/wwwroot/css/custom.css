@@ -31,3 +31,11 @@
     object-fit: cover;
     border-radius: 50%;
 }
+
+.favor-img {
+    height: 160px;
+    object-fit: cover;
+    border-radius: 16px 16px 0 0;
+    filter: brightness(0.9);
+}
+
