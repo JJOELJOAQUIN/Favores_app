@@ -1,11 +1,41 @@
-@model Favores_Back_mvc.Models.Chat
+﻿@model Favores_Back_mvc.Models.Chat
 @{
     ViewData["Title"] = "Chat";
     var usuarioId = Context.Session.GetInt32("UsuarioId");
+
+    bool yaCalifico = ViewBag.YaCalifico ?? false;
+    int totalCalificaciones = ViewBag.TotalCalificaciones ?? 0;
+
+    double promedio = ViewBag.Promedio ?? 0d;
+    int estrellas = (int)Math.Round(promedio);
+
+    // Evita CS8604: Mensajes puede ser null
+    var mensajesOrdenados = (Model.Mensajes ?? Enumerable.Empty<Favores_Back_mvc.Models.Mensaje>())
+        .OrderBy(m => m.FechaHora)
+        .ToList();
 }
 
 <h2>Chat del Favor: @Model.Favor?.Titulo</h2>
 <hr />
+
+@if (Model.Favor?.Estado == "CerradoDefinitivo")
+{
+    <div class="mb-3">
+        <strong>Promedio:</strong>
+        @for (int i = 1; i <= 5; i++)
+        {
+            if (i <= estrellas)
+            {
+                <span style="color:gold; font-size:20px;">★</span>
+            }
+            else
+            {
+                <span style="color:lightgray; font-size:20px;">★</span>
+            }
+        }
+        <span class="ms-2">(@promedio.ToString("0.0"))</span>
+    </div>
+}
 
 <div class="mb-3">
     <strong>Creador:</strong> @Model.Creador?.Email <br />
@@ -15,30 +45,20 @@
 
 <!-- CONTENEDOR PRINCIPAL -->
 <div style="border:1px solid #ccc; border-radius:10px; padding:20px; height:450px; overflow-y:auto; background:#f7f7f7;">
-    @if (Model.Mensajes != null && Model.Mensajes.Any())
+    @if (mensajesOrdenados.Any())
     {
-        @foreach (var m in Model.Mensajes.OrderBy(m => m.FechaHora))
+        @foreach (var m in mensajesOrdenados)
         {
             bool soyYo = (usuarioId == m.RemitenteId);
+            var claseContenedor = soyYo ? "mensaje-propio" : "mensaje-ajeno";
+            var claseBurbuja = soyYo ? "burbuja-propia" : "burbuja-ajena";
 
-
-            <div style="
-                        margin-bottom:12px;
-                        display:flex;
-                        flex-direction:column;
-                        align-items:@(soyYo ? "flex-end" : "flex-start");
-                    ">
-                <div style="
-                            max-width:70%;
-                            padding:10px 15px;
-                            border-radius:15px;
-                            background:@(soyYo ? "#d1f0d1" : "#ffffff");
-                            border:1px solid #ccc;
-                        ">
+            <div class="mensaje-contenedor @claseContenedor">
+                <div class="burbuja @claseBurbuja">
                     <strong>@m.Remitente?.Email</strong><br />
                     @m.Texto
                 </div>
-                <small style="color:#666; margin-top:3px;">
+                <small class="mensaje-fecha">
                     @m.FechaHora.ToString("dd/MM HH:mm")
                 </small>
             </div>
@@ -52,17 +72,92 @@
 
 <hr />
 
-<!-- FORMULARIO DE ENV�O -->
-<form asp-action="EnviarMensaje" method="post">
-    <input type="hidden" name="chatId" value="@Model.Id" />
+@if (Model.Favor?.Estado != "CerradoDefinitivo")
+{
+    <!-- FORMULARIO MENSAJE -->
+    <form asp-action="EnviarMensaje" method="post">
+        <input type="hidden" name="chatId" value="@Model.Id" />
 
-    <div class="form-group mb-2">
-        <textarea name="texto" class="form-control" rows="2" placeholder="Escribe un mensaje..." required></textarea>
+        <div class="form-group mb-2">
+            <textarea name="texto" class="form-control" rows="2" placeholder="Escribe un mensaje..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Enviar</button>
+
+        <a asp-controller="Favor"
+               asp-action="Details"
+               asp-route-id="@Model.FavorId"
+               class="btn btn-secondary">
+            Volver al Favor
+        </a>
+    </form>
+}
+else
+{
+    <div class="alert alert-info mt-2">
+        El chat está cerrado definitivamente. No se pueden enviar más mensajes.
     </div>
 
-    <button type="submit" class="btn btn-primary">Enviar</button>
-    <a asp-action="Index" class="btn btn-secondary">Volver</a>
-</form>
+    <a asp-controller="Favor"
+           asp-action="Details"
+           asp-route-id="@Model.FavorId"
+           class="btn btn-secondary">
+        Volver al Favor
+    </a>
+}
+
+<!-- SOLO EL CREADOR PUEDE CERRAR -->
+@if (Model.Favor?.Estado != "Finalizado"
+    && Model.Favor?.Estado != "CerradoDefinitivo"
+    && usuarioId == Model.CreadorId)
+{
+    <form asp-action="CerrarFavor" method="post">
+        <input type="hidden" name="chatId" value="@Model.Id" />
+        <button type="submit" class="btn btn-success mt-2">
+            Cerrar Favor
+        </button>
+    </form>
+}
+
+<!-- CALIFICACION -->
+@if (Model.Favor?.Estado == "Finalizado"
+    && usuarioId != null
+    && !yaCalifico
+    && totalCalificaciones < 2)
+{
+    <hr />
+    <h4>Calificar Usuario</h4>
+
+    <form asp-controller="Calificacion" asp-action="Crear" method="post">
+        <input type="hidden" name="favorId" value="@Model.FavorId" />
+
+        <div class="mb-2">
+            <label>Puntuación</label>
+            <select name="puntuacion" class="form-control" required>
+                <option value="">Seleccione</option>
+                @for (int i = 1; i <= 5; i++)
+                {
+                    <option value="@i">@i</option>
+                }
+            </select>
+        </div>
+
+        <div class="mb-2">
+            <textarea name="comentario" class="form-control" placeholder="Comentario opcional"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-warning">
+            Enviar Calificación
+        </button>
+    </form>
+}
+
+@if (Model.Favor?.Estado == "CerradoDefinitivo")
+{
+    <div class="alert alert-success mt-3">
+        Favor completamente evaluado y cerrado.
+    </div>
+}
 
 @if (TempData["Error"] != null)
 {

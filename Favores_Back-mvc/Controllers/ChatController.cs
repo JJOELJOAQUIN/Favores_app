@@ -14,7 +14,6 @@ namespace Favores_Back_mvc.Controllers
             _context = context;
         }
 
-        // GET: Chat/Details/5
         public async Task<IActionResult> Details(int id)
         {
             var chat = await _context.Chats
@@ -28,29 +27,51 @@ namespace Favores_Back_mvc.Controllers
             if (chat == null)
                 return NotFound();
 
+            var usuarioId = HttpContext.Session.GetInt32("UsuarioId");
+
+            if (chat.Favor != null)
+            {
+                var calificaciones = await _context.Calificaciones
+                    .Where(c => c.FavorId == chat.FavorId)
+                    .ToListAsync();
+
+                ViewBag.TotalCalificaciones = calificaciones.Count;
+
+                if (calificaciones.Any())
+                    ViewBag.Promedio = calificaciones.Average(c => c.Puntuacion);
+                else
+                    ViewBag.Promedio = 0;
+
+                if (usuarioId != null)
+                {
+                    ViewBag.YaCalifico = calificaciones
+                        .Any(c => c.EvaluadorId == usuarioId.Value);
+                }
+            }
+
             return View(chat);
         }
 
-        // POST: Chat/EnviarMensaje
         [HttpPost]
         public async Task<IActionResult> EnviarMensaje(int chatId, string texto)
         {
             var usuarioId = HttpContext.Session.GetInt32("UsuarioId");
 
             if (usuarioId == null)
-            {
-                TempData["Error"] = "Debes iniciar sesión para enviar mensajes.";
-                return RedirectToAction("Details", new { id = chatId });
-            }
+                return RedirectToAction("Index", "Login");
 
             var chat = await _context.Chats
-                .Include(c => c.Mensajes)
+                .Include(c => c.Favor)
                 .FirstOrDefaultAsync(c => c.Id == chatId);
 
             if (chat == null)
-            {
-                TempData["Error"] = "El chat no existe.";
                 return RedirectToAction("Index", "Favor");
+
+            // BLOQUEAR MENSAJES SI ESTA CERRADO DEFINITIVO
+            if (chat.Favor != null && chat.Favor.Estado == "CerradoDefinitivo")
+            {
+                TempData["Error"] = "El chat está cerrado definitivamente.";
+                return RedirectToAction("Details", new { id = chatId });
             }
 
             if (string.IsNullOrWhiteSpace(texto))
@@ -68,6 +89,34 @@ namespace Favores_Back_mvc.Controllers
             };
 
             _context.Mensajes.Add(mensaje);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Details", new { id = chatId });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CerrarFavor(int chatId)
+        {
+            var usuarioId = HttpContext.Session.GetInt32("UsuarioId");
+            if (usuarioId == null)
+                return RedirectToAction("Index", "Login");
+
+            var chat = await _context.Chats
+                .Include(c => c.Favor)
+                .FirstOrDefaultAsync(c => c.Id == chatId);
+
+            if (chat == null)
+                return NotFound();
+
+            if (chat.Favor == null)
+                return BadRequest();
+
+            // SOLO CREADOR
+            if (usuarioId != chat.CreadorId)
+                return Unauthorized();
+
+            chat.Favor.Estado = "Finalizado";
+
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Details", new { id = chatId });

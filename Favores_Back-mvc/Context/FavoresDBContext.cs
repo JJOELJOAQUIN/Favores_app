@@ -70,24 +70,35 @@ namespace Favores_Back_mvc.Context
                 .HasForeignKey(m => m.ChatId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // ⚙️ Arreglo: Calificación (evitar múltiples cascadas)
+            // ===============================
+            // CALIFICACIONES
+            // ===============================
+
+            // Un Favor puede tener muchas Calificaciones (máximo 2 lógicamente)
             modelBuilder.Entity<Calificacion>()
                 .HasOne(c => c.Favor)
-                .WithOne()
-                .HasForeignKey<Calificacion>(c => c.FavorId)
+                .WithMany()
+                .HasForeignKey(c => c.FavorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Usuario que evalúa
             modelBuilder.Entity<Calificacion>()
                 .HasOne(c => c.Evaluador)
                 .WithMany()
                 .HasForeignKey(c => c.EvaluadorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Usuario que es evaluado
             modelBuilder.Entity<Calificacion>()
                 .HasOne(c => c.Evaluado)
                 .WithMany()
                 .HasForeignKey(c => c.EvaluadoId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Evita doble calificación del mismo usuario en el mismo favor
+            modelBuilder.Entity<Calificacion>()
+                .HasIndex(c => new { c.FavorId, c.EvaluadorId })
+                .IsUnique();
         }
 
     }
